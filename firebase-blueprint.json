@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "SiteImage": {
+      "title": "Site Image",
+      "description": "Fixed named images used across the website.",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["url"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "A before/after slider or single image card shown in the Gallery.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "serviceName": { "type": "string" },
+        "categories": { "type": "array" },
+        "type": { "type": "string", "enum": ["single", "slider"] },
+        "imageUrl": { "type": "string" },
+        "beforeImg": { "type": "string" },
+        "afterImg": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "serviceName", "categories", "type", "order"]
+    },
+    "InstagramPost": {
+      "title": "Instagram Post",
+      "description": "Mock instagram posts shown in the feed.",
+      "type": "object",
+      "properties": {
+        "img": { "type": "string" },
+        "caption": { "type": "string" },
+        "likes": { "type": "string" },
+        "link": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["img", "caption", "likes", "link", "order"]
+    },
+    "Service": {
+      "title": "Salon Service",
+      "description": "Services and treatments offered at the salon with customizable pricing, duration, and descriptions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "string" },
+        "category": { "type": "string", "enum": ["core", "addon"] },
+        "popular": { "type": "boolean" },
+        "order": { "type": "number" }
+      },
+      "required": ["name", "description", "price", "duration", "category"]
+    },
+    "AvailabilitySettings": {
+      "title": "Availability Settings",
+      "description": "Availability settings config document including open days, buffer time, time slots and occupancy count.",
+      "type": "object",
+      "properties": {
+        "openDays": { "type": "array" },
+        "timeSlots": { "type": "array" },
+        "bufferMinutes": { "type": "number" },
+        "maxBookingsPerSlot": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["openDays", "timeSlots", "bufferMinutes", "maxBookingsPerSlot"]
+    },
+    "BlockedDate": {
+      "title": "Blocked Date",
+      "description": "Calendar dates specifically blocked completely or partially by the studio.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "reason": { "type": "string" },
+        "blockedSlots": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["date", "blockedSlots"]
+    }
+  },
+  "firestore": {
+    "/siteImages/{doc}": {
+      "schema": "SiteImage",
+      "description": "Document for each named site image slot"
+    },
+    "/galleryItems/{doc}": {
+      "schema": "GalleryItem",
+      "description": "Interactive gallery items with single or before/after photos"
+    },
+    "/instagramPosts/{doc}": {
+      "schema": "InstagramPost",
+      "description": "Square mockup posts for the interactive Instagram feed"
+    },
+    "/services/{doc}": {
+      "schema": "Service",
+      "description": "Services and treatment menu options shown to clients"
+    },
+    "/availabilitySettings/{doc}": {
+      "schema": "AvailabilitySettings",
+      "description": "Salon-wide appointment booking availability configuration"
+    },
+    "/blockedDates/{doc}": {
+      "schema": "BlockedDate",
+      "description": "Blocked date documents named with YYYY-MM-DD"
+    }
+  }
+}

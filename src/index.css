@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  
+  --color-cream: #fbf9f6;
+  --color-cream-dark: #f0ebe2;
+  --color-cream-light: #fefdfb;
+  --color-charcoal: #222222;
+  --color-charcoal-light: #484848;
+  --color-charcoal-dark: #000000;
+  
+  --color-rose: #C9A84C;
+  --color-rose-border: #D4B96A;
+  
+  --color-blush: #C9A84C;
+  --color-blush-dark: #A8893D;
+  --color-blush-light: #FAF3E0;
+  
+  --color-sage: #1B2A4A;
+  --color-sage-dark: #111D33;
+  --color-sage-light: #2D4270;
+  --color-sage-pale: #EEF1F7;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Base interactive transitions */
+a, button {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.font-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Artistic design theme helpers */
+.serif {
+  font-family: var(--font-serif);
+}
+
+.sans {
+  font-family: var(--font-sans);
+}
+
+.hero-mask {
+  border-radius: 400px 400px 0 0;
+}
+
+/* Elegant Boutique card system */
+.boutique-card {
+  position: relative;
+  background-color: var(--color-cream-light);
+  border: 1px solid rgba(212, 152, 152, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.boutique-card::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(102, 118, 101, 0.12); /* subtle sage line */
+  border-radius: 8px;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+}
+
+.boutique-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-rose-border);
+  box-shadow: 0 12px 30px rgba(102, 118, 101, 0.08);
+}
+
+.boutique-card:hover::after {
+  border-color: rgba(207, 132, 132, 0.25); /* changes to rose glow */
+  inset: 8px;
+}
+
+/* Glassmorphism elements */
+.glass-panel {
+  background: rgba(251, 249, 246, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 152, 152, 0.2);
+}
+
+/* Fluid zoom transition for luxury galleries */
+.zoom-img-container {
+  overflow: hidden;
+}
+
+.zoom-img-container img {
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zoom-img-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Scrollbar aesthetic customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-cream-dark);
+  border: 2px solid var(--color-cream);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-rose);
+}
+
+/* Custom organic separator line */
+.organic-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(207, 132, 132, 0.4) 50%, transparent);
+}
+
+/* Gold heading utility */
+.heading-gold {
+  color: var(--color-rose);
+}
+
+/* Gold button style */
+.btn-gold {
+  background-color: var(--color-rose);
+  color: var(--color-cream);
+}
+
+.btn-gold:hover {
+  background-color: var(--color-blush-dark);
+  color: var(--color-cream);
+}
+
+
+
+
