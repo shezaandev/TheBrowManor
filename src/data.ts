@@ -150,7 +150,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Charlotte Thompson',
     content: 'Leticia is an absolute brow magician! The Brow Manor is so peaceful, warm, and beautifully clean. My brows have never looked so full or perfectly shaped. I got the full Brow Lamination & Dye and I am completely obsessed!',
     rating: 5,
-    service: 'Brow Wax, Sculpt, Lamination & Dye/Tint',
+    service: 'Full Face Lami',
     date: 'May 2026',
   },
   {
@@ -158,7 +158,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Annie Pastars',
     content: 'Cannot recommend The Brow Manor enough. Leticia takes so much care, her attention to detail is unmatched. It feels like a high-end luxury spa retreat, and the deposit system makes securing a slot simple. The pre and aftercare advice has kept my lamination looking perfect for weeks.',
     rating: 5,
-    service: 'Brow Wax, Sculpt & Naked Lamination',
+    service: 'Bare Lami',
     date: 'April 2026',
   },
   {
@@ -166,7 +166,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Wendy Whitfield',
     content: 'What a beautiful boutique experience. Leticia is so friendly and professional, and she really listens to what you want. The tension-release scalp massage and under-eye luxury mask during my brow wax were absolute heaven!',
     rating: 5,
-    service: 'Brow Wax & Sculpt + Luxury Add-ons',
+    service: 'Classy Sculpt + Luxury Indulgences',
     date: 'May 2026',
   },
 ];

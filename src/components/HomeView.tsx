@@ -41,11 +41,11 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
 
   return (
     <div className="overflow-hidden">
-      
+
       {/* 1. HERO SECTION */}
       <section className="relative min-h-[90vh] flex items-center justify-center bg-cream text-charcoal py-20 px-4 sm:px-6 lg:px-12 border-b border-rose-border/20">
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-          
+
           {/* Left Text Column */}
           <div className="lg:col-span-6 flex flex-col justify-between h-full space-y-8 text-center lg:text-left">
             <div className="space-y-6">
@@ -58,7 +58,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>North Lakes & Bongaree, QLD</span>
               </motion.div>
-              
+
               <div className="space-y-5">
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
@@ -72,7 +72,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
                   Leave utterly{' '}
                   <span className="italic text-rose">transformed.</span>
                 </motion.h1>
-                
+
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
               <div className="hidden sm:block w-[1px] h-8 bg-rose-border/30"></div>
               <div className="flex flex-col text-left">
                 <span className="text-[9px] uppercase tracking-widest font-bold text-sage">Instagram</span>
-                <a 
+                <a
                   href="https://www.instagram.com/thebrowmanorr/"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -158,7 +158,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
               </div>
 
               {/* Floating Testimonial Card */}
-              <div className="absolute bottom-12 -left-12 z-20 bg-sage text-white p-5 rounded-2xl max-w-[260px] shadow-lg transform -rotate-2 hidden md:block">
+              <div className="relative sm:absolute sm:bottom-12 sm:-left-12 mt-4 sm:mt-0 mx-auto sm:mx-0 max-w-[280px] sm:max-w-[300px] z-20 bg-sage text-white p-5 rounded-2xl shadow-lg transform -rotate-2">
                 <div className="flex gap-1 mb-1.5 text-rose-border">★★★★★</div>
                 <p className="serif text-xs italic mb-2.5 leading-relaxed">
                   "Leticia is so precise and careful. My brows have never looked so full and natural."
@@ -191,11 +191,11 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
               <Heart className="w-5 h-5 fill-sage/20" />
             </div>
           </div>
-          
+
           <h2 className="font-serif text-3xl sm:text-4xl font-light text-charcoal tracking-normal leading-snug">
             This is not your average studio. There are no crowds, no noise, no strangers beside you. There is only Leticia — and the quiet, devoted art of making your brows the finest they have ever been.
           </h2>
-          
+
           <p className="text-md sm:text-lg text-charcoal-light leading-relaxed max-w-2xl mx-auto font-light">
             The Brow Manor was born from a single, unwavering belief — that every person who sits in Leticia's chair deserves to feel entirely seen, exquisitely cared for, and utterly beautiful. A studio built not for the masses, but for you.
           </p>
@@ -216,7 +216,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
       {/* 3. FEATURED SERVICES PREVIEW */}
       <section className="bg-cream py-24 px-4">
         <div className="max-w-7xl mx-auto">
-          
+
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
             <div className="space-y-3">
@@ -242,7 +242,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuredServices.map((service, index) => (
-              <div 
+              <div
                 key={service.id}
                 id={`featured-card-${service.id}`}
                 className="boutique-card p-8 flex flex-col justify-between group"
@@ -298,14 +298,14 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
       {/* 4. SOCIAL PROOF (TESTIMONIALS SLIDER) */}
       <section className="bg-sage-pale py-24 px-4 text-center border-t border-b border-cream-dark/30 relative">
         <div className="absolute top-10 left-10 text-sage/10 font-serif text-9xl leading-none select-none">“</div>
-        
+
         <div className="max-w-4xl mx-auto space-y-10 relative z-10">
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-widest text-sage-light">
-              Client Love
+              Beloved By The Ton
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-light text-charcoal tracking-wide">
-              Words From Our Clients
+              Their Words, Our Greatest Honor
             </h2>
           </div>
 
@@ -355,9 +355,8 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
                 id={`testimonial-dot-${idx}`}
                 aria-label={`Go to testimonial ${idx + 1}`}
                 onClick={() => setActiveTestimonial(idx)}
-                className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
-                  activeTestimonial === idx ? 'bg-sage w-6' : 'bg-sage-light/35 hover:bg-sage-light/60'
-                }`}
+                className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${activeTestimonial === idx ? 'bg-sage w-6' : 'bg-sage-light/35 hover:bg-sage-light/60'
+                  }`}
               />
             ))}
           </div>
@@ -382,7 +381,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 font-sans">
             {instagramPosts.slice(0, 6).map((post, idx) => (
-              <a 
+              <a
                 key={post.id || idx}
                 id={`ig-item-${idx + 1}`}
                 href="https://instagram.com/thebrowmanorr"
@@ -395,7 +394,7 @@ export default function HomeView({ setCurrentTab }: HomeViewProps) {
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                
+
                 {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-3xs">
                   <Instagram className="w-8 h-8 text-cream transform scale-90 group-hover:scale-100 transition-transform duration-300" />

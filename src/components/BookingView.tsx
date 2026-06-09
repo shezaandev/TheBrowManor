@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
-import { 
-  Calendar, Clock, DollarSign, Phone, Mail, Sparkles, Check, 
-  ChevronRight, ChevronLeft, AlertCircle, Info, Heart, Instagram, MapPin 
+import html2canvas from 'html2canvas';
+import {
+  Calendar, Clock, DollarSign, Phone, Mail, Sparkles, Check,
+  ChevronRight, ChevronLeft, AlertCircle, Info, Heart, Instagram, MapPin
 } from 'lucide-react';
 import { useFirestoreImages } from '../hooks/useFirestoreImages';
 import { useAvailability } from '../hooks/useAvailability';
@@ -68,7 +69,7 @@ export default function BookingView() {
   const [selectedAddons, setSelectedAddons] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
-  
+
   const [clientInfo, setClientInfo] = useState({
     name: '',
     email: '',
@@ -80,6 +81,8 @@ export default function BookingView() {
   });
 
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const bookingSlipRef = useRef<HTMLDivElement>(null);
 
   // Available core & add-ons lists
   const bookableServices = services.filter(
@@ -103,23 +106,23 @@ export default function BookingView() {
     const { year, month } = getDisplayedYearMonth(navMonthOffset);
     const dates = [];
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
+
     // Get number of days in the target year/month
     const numDays = new Date(year, month + 1, 0).getDate();
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     for (let d = 1; d <= numDays; d++) {
       const checkDate = new Date(year, month, d);
       checkDate.setHours(0, 0, 0, 0);
       const dayIndex = checkDate.getDay();
       const rawDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      
+
       const isPast = checkDate < today;
       const isClosed = !openDays.includes(dayIndex);
       const isBlocked = !!(blockedDates[rawDate] && blockedDates[rawDate].blockedSlots.length === 0);
-      
+
       dates.push({
         raw: rawDate,
         dayNum: d,
@@ -169,10 +172,10 @@ export default function BookingView() {
       for (let i = 0; i < 45; i++) {
         const dayIndex = temp.getDay();
         const rawDate = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}-${String(temp.getDate()).padStart(2, '0')}`;
-        
+
         const isClosed = !openDays.includes(dayIndex);
         const isBlocked = !!(blockedDates[rawDate] && blockedDates[rawDate].blockedSlots.length === 0);
-        
+
         if (!isClosed && !isBlocked) {
           setSelectedDate(rawDate);
           break;
@@ -212,7 +215,7 @@ export default function BookingView() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const isCheckbox = type === 'checkbox';
-    
+
     setClientInfo(prev => ({
       ...prev,
       [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value
@@ -230,8 +233,8 @@ export default function BookingView() {
     );
   };
 
-  const handleConfirmReservation = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitBooking = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!isFormValid()) return;
 
     const selectedDateFormatted = formatRawDate(selectedDate);
@@ -243,6 +246,7 @@ export default function BookingView() {
       ? selectedAddons.map(a => a.name).join(', ')
       : 'None';
 
+    setIsSubmitting(true);
     try {
       // 1. Calculate combined duration in minutes
       const coreMin = selectedCore ? parseDurationToMinutes(selectedCore.duration) : 45;
@@ -294,9 +298,29 @@ export default function BookingView() {
       console.log('Booking email sent successfully');
     } catch (error) {
       console.error('EmailJS booking error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
 
     setBookingConfirmed(true);
+  };
+
+  const handleConfirmReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSubmitBooking();
+  };
+
+  const handleDownloadSlip = async () => {
+    if (!bookingSlipRef.current) return;
+    const canvas = await html2canvas(bookingSlipRef.current, {
+      backgroundColor: '#fbf9f6',
+      scale: 2,
+      useCORS: true,
+    });
+    const link = document.createElement('a');
+    link.download = 'brow-manor-booking-slip.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   const handleResetWizard = () => {
@@ -321,7 +345,7 @@ export default function BookingView() {
   return (
     <div className="bg-cream py-16 px-4">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* POLICIES AND NOTICES REVELATION - Standardized */}
         {!bookingConfirmed && selectedLocation === 'north-lakes' && (
           <div className="bg-[#FAF0EE] rounded-sm border border-[#F5EAE8] p-6 mb-10 space-y-4 shadow-xs">
@@ -334,7 +358,7 @@ export default function BookingView() {
                 </p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs border-t border-blush/25">
               <div className="space-y-0.5">
                 <span className="font-bold text-charcoal block">Punctuality Reminder</span>
@@ -371,7 +395,7 @@ export default function BookingView() {
             </div>
 
             {/* Receipt details */}
-            <div className="bg-[#FAF7F2] p-6 rounded-xs border border-cream-dark/60 max-w-md mx-auto text-left space-y-4">
+            <div ref={bookingSlipRef} className="bg-[#FAF7F2] p-6 rounded-xs border border-cream-dark/60 max-w-md mx-auto text-left space-y-4">
               <div className="border-b border-cream-dark pb-3 text-center">
                 <span className="font-serif font-semibold text-charcoal tracking-wider uppercase text-xs">Booking Slip</span>
               </div>
@@ -400,10 +424,7 @@ export default function BookingView() {
                 <div className="flex justify-between">
                   <span className="text-charcoal-light">Scheduled Time:</span>
                   <span className="font-semibold text-sage text-right">
-                    {(() => {
-                      const f = formatRawDate(selectedDate);
-                      return f ? `${f.dayName}, ${f.formatted}` : selectedDate;
-                    })()} @ {selectedTime}
+                    {formatRawDate(selectedDate)?.dayName}, {formatRawDate(selectedDate)?.formatted} @ {selectedTime}
                   </span>
                 </div>
                 <div className="border-t border-cream-dark/60 pt-3 space-y-1.5 font-sans">
@@ -426,11 +447,25 @@ export default function BookingView() {
               </div>
             </div>
 
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={handleDownloadSlip}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent border border-rose/40 hover:border-rose text-rose text-xs uppercase tracking-widest font-semibold rounded-full transition-all cursor-pointer hover:bg-rose/5"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download Booking Slip
+              </button>
+            </div>
+
             {/* Post booking instructions */}
             <div className="text-xs text-charcoal-light leading-relaxed max-w-md mx-auto space-y-2 font-light">
               <p className="font-semibold text-charcoal">📍 Address Reveal Policy:</p>
               <p>
-                Your appointment is at The Brow Manor, Level One, Suite 5/5 Discovery Dr, North Lakes QLD 4509. Leticia will confirm your booking shortly and share any parking details you may require.
+                Your appointment is at The Brow Manor, Level One, Suite 5/5 Discovery Dr, North Lakes QLD 4509. Leticia will personally confirm your reservation shortly — she will reach out via phone or email to verify your details and share any parking information you may require. We look forward to welcoming you to The Manor.
               </p>
               <p>
                 Need to reschedule? Please let Leticia know at least 24 hours in advance at <span className="font-bold text-charcoal">+61 416 423 758</span> or email <span className="font-bold text-charcoal">leticiaeast04@gmail.com</span> to rollover your deposit.
@@ -536,7 +571,7 @@ export default function BookingView() {
         ) : (
           /* STEP FLOW WIZARD BUILD */
           <div className="bg-cream-light border border-cream-dark/60 rounded-sm shadow-xl p-6 sm:p-10 space-y-8 animate-fade-in">
-            
+
             {/* Steps Indicator Bar */}
             <div className="flex justify-between items-center pb-6 border-b border-cream-dark/60 text-xs text-charcoal-light font-sans overflow-x-auto min-w-full">
               <div className={`shrink-0 flex items-center gap-1.5 pb-2 ${step >= 1 ? 'text-rose font-bold border-b-2 border-rose pb-2' : ''}`}>
@@ -589,11 +624,10 @@ export default function BookingView() {
                         key={service.id}
                         id={`wizard-select-core-${service.id}`}
                         onClick={() => setSelectedCore(service)}
-                        className={`w-full text-left p-5 rounded-xs border transition-all flex justify-between items-center gap-4 cursor-pointer focus:outline-hidden ${
-                          isSelected 
-                            ? 'bg-[#EDF1EC] border-rose ring-2 ring-rose/50 shadow-xs' 
+                        className={`w-full text-left p-5 rounded-xs border transition-all flex justify-between items-center gap-4 cursor-pointer focus:outline-hidden ${isSelected
+                            ? 'bg-[#EDF1EC] border-rose ring-2 ring-rose/50 shadow-xs'
                             : 'bg-cream-light border-cream-dark/60 hover:border-blush-dark/40'
-                        }`}
+                          }`}
                       >
                         <div className="space-y-1.5 max-w-[80%]">
                           <div className="flex items-center gap-2">
@@ -643,11 +677,10 @@ export default function BookingView() {
                         key={addon.id}
                         id={`wizard-select-addon-${addon.id}`}
                         onClick={() => handleToggleAddon(addon)}
-                        className={`text-left p-5 rounded-xs border transition-all flex flex-col justify-between cursor-pointer focus:outline-hidden ${
-                          isSelected 
-                            ? 'bg-[#EDF1EC] border-rose ring-2 ring-rose/50 shadow-xs' 
+                        className={`text-left p-5 rounded-xs border transition-all flex flex-col justify-between cursor-pointer focus:outline-hidden ${isSelected
+                            ? 'bg-[#EDF1EC] border-rose ring-2 ring-rose/50 shadow-xs'
                             : 'bg-cream-light border-cream-dark/60 hover:border-blush-dark/40'
-                        }`}
+                          }`}
                       >
                         <div className="space-y-2">
                           <div className="flex justify-between items-start gap-1">
@@ -690,11 +723,10 @@ export default function BookingView() {
                       id="prev-month-btn"
                       onClick={() => setNavMonthOffset(prev => Math.max(0, prev - 1))}
                       disabled={navMonthOffset === 0}
-                      className={`w-10 h-10 flex items-center justify-center bg-transparent border rounded-xs transition-all ${
-                        navMonthOffset === 0
+                      className={`w-10 h-10 flex items-center justify-center bg-transparent border rounded-xs transition-all ${navMonthOffset === 0
                           ? 'border-charcoal/10 text-charcoal/30 cursor-not-allowed opacity-50'
                           : 'border-charcoal/30 hover:border-charcoal text-charcoal hover:bg-cream cursor-pointer'
-                      }`}
+                        }`}
                     >
                       ‹
                     </button>
@@ -714,7 +746,7 @@ export default function BookingView() {
                   {/* Calendar Dates Grid */}
                   <div className="space-y-2.5">
                     <span className="block text-[11px] font-sans font-semibold uppercase tracking-wider text-charcoal">Available Days</span>
-                    
+
                     {avLoading ? (
                       <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5 text-center">
                         {/* Day headers placeholder */}
@@ -730,7 +762,7 @@ export default function BookingView() {
                       const firstDayOfWeek = new Date(year, month, 1).getDay();
                       const numDaysInMonth = new Date(year, month + 1, 0).getDate();
                       const lastDayOfWeek = new Date(year, month, numDaysInMonth).getDay();
-                      
+
                       const emptyPrefix = Array.from({ length: firstDayOfWeek });
                       const emptySuffix = Array.from({ length: 6 - lastDayOfWeek });
 
@@ -759,9 +791,9 @@ export default function BookingView() {
 
                           {/* Empty prefix cells for proper alignment */}
                           {emptyPrefix.map((_, i) => (
-                            <div 
-                              key={`empty-prefix-${i}`} 
-                              className="bg-transparent border border-transparent aspect-square flex items-center justify-center min-h-[4.5rem] sm:min-h-[5.5rem]" 
+                            <div
+                              key={`empty-prefix-${i}`}
+                              className="bg-transparent border border-transparent aspect-square flex items-center justify-center min-h-[4.5rem] sm:min-h-[5.5rem]"
                             />
                           ))}
 
@@ -770,7 +802,7 @@ export default function BookingView() {
                             const isSelected = selectedDate === date.raw;
                             const isToday = date.raw === todayRawStr;
                             const isDisabled = date.isPast || date.isClosed || date.isBlocked;
-                            
+
                             return (
                               <button
                                 key={date.raw}
@@ -778,8 +810,7 @@ export default function BookingView() {
                                 type="button"
                                 disabled={isDisabled}
                                 onClick={() => !isDisabled && setSelectedDate(date.raw)}
-                                className={`relative flex flex-col items-center justify-center p-1 border rounded-xs transition-colors duration-200 focus:outline-hidden aspect-square min-h-[4.5rem] sm:min-h-[5.5rem] ${
-                                  isSelected
+                                className={`relative flex flex-col items-center justify-center p-1 border rounded-xs transition-colors duration-200 focus:outline-hidden aspect-square min-h-[4.5rem] sm:min-h-[5.5rem] ${isSelected
                                     ? 'bg-white border-2 border-rose shadow-md text-white'
                                     : date.isPast
                                       ? 'bg-cream-dark/5 border-cream-dark/15 text-charcoal-light/35 cursor-not-allowed opacity-[0.45]'
@@ -788,15 +819,14 @@ export default function BookingView() {
                                         : date.isBlocked
                                           ? 'bg-rose/5 border border-rose/15 text-rose/75 cursor-not-allowed'
                                           : 'bg-cream-light border-cream-dark/60 hover:bg-rose/10 hover:border-rose cursor-pointer text-charcoal'
-                                }`}
+                                  }`}
                               >
-                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
-                                  isSelected
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${isSelected
                                     ? 'bg-rose text-cream font-bold'
                                     : isToday
                                       ? 'border-2 border-rose text-rose font-semibold'
                                       : ''
-                                }`}>
+                                  }`}>
                                   <span className="text-xs sm:text-xs md:text-sm">{date.dayNum}</span>
                                 </div>
 
@@ -812,9 +842,9 @@ export default function BookingView() {
 
                           {/* Empty suffix cells for proper alignment */}
                           {emptySuffix.map((_, i) => (
-                            <div 
-                              key={`empty-suffix-${i}`} 
-                              className="bg-transparent border border-transparent aspect-square flex items-center justify-center min-h-[4.5rem] sm:min-h-[5.5rem]" 
+                            <div
+                              key={`empty-suffix-${i}`}
+                              className="bg-transparent border border-transparent aspect-square flex items-center justify-center min-h-[4.5rem] sm:min-h-[5.5rem]"
                             />
                           ))}
                         </div>
@@ -849,13 +879,12 @@ export default function BookingView() {
                                   setSelectedTime(time);
                                 }}
                                 disabled={isBlocked}
-                                className={`p-3 rounded-xs border text-center transition-all focus:outline-hidden text-xs sm:text-sm font-sans flex items-center justify-between px-3 gap-1.5 ${
-                                  isBlocked 
+                                className={`p-3 rounded-xs border text-center transition-all focus:outline-hidden text-xs sm:text-sm font-sans flex items-center justify-between px-3 gap-1.5 ${isBlocked
                                     ? 'opacity-45 cursor-not-allowed pointer-events-none bg-neutral-200 text-neutral-500 border-neutral-300'
-                                    : isSelected 
-                                      ? 'bg-rose text-cream border-rose shadow-md font-bold cursor-pointer' 
+                                    : isSelected
+                                      ? 'bg-rose text-cream border-rose shadow-md font-bold cursor-pointer'
                                       : 'bg-cream-light border-cream-dark/60 hover:border-rose cursor-pointer'
-                                }`}
+                                  }`}
                                 style={isBlocked ? { opacity: 0.45, cursor: 'not-allowed', pointerEvents: 'none', background: '#eaeaea' } : undefined}
                               >
                                 <span>{time}</span>
@@ -949,7 +978,7 @@ export default function BookingView() {
                 {/* Policies consents checkboxes */}
                 <div className="bg-[#FAF7F2] p-5 rounded-xs border border-cream-dark/60 space-y-4 text-xs sm:text-sm">
                   <span className="block font-serif font-semibold text-charcoal uppercase tracking-wider text-[11px] border-b border-cream-dark/60 pb-2">Mandatory Booking Consents</span>
-                  
+
                   <div className="space-y-3.5">
                     <label className="flex items-start gap-3 cursor-pointer select-none">
                       <input
@@ -998,16 +1027,26 @@ export default function BookingView() {
                 <div className="pt-2">
                   <button
                     id="confirm-reservation-booking-btn"
-                    type="submit"
-                    disabled={!isFormValid()}
-                    className={`w-full py-4 rounded-xs font-sans text-xs uppercase tracking-widest font-semibold transition-all flex items-center justify-center gap-2 shadow-md ${
-                      isFormValid() 
-                        ? 'bg-rose hover:bg-blush-dark text-cream cursor-pointer' 
+                    type="button"
+                    disabled={isSubmitting || !clientInfo.agreePolicies || !clientInfo.agreeSolo || !clientInfo.agreePreCare}
+                    onClick={handleSubmitBooking}
+                    className={`w-full py-4 rounded-xs font-sans text-xs uppercase tracking-widest font-semibold transition-all flex items-center justify-center gap-2 shadow-md relative overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed ${isFormValid()
+                        ? 'bg-rose hover:bg-blush-dark text-cream cursor-pointer'
                         : 'bg-cream-dark text-charcoal-light/45 cursor-not-allowed border border-cream-dark'
-                    }`}
+                      }`}
                   >
-                    <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Submit Booking Request</span>
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2 justify-center">
+                        <span className="text-xs uppercase tracking-widest">Reserving Your Place</span>
+                        <span className="flex gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-xs uppercase tracking-widest">Confirm & Reserve My Place</span>
+                    )}
                   </button>
                   {!isFormValid() && (
                     <p className="text-[10px] text-center text-red-700/80 mt-2 italic font-light font-sans">
@@ -1039,11 +1078,10 @@ export default function BookingView() {
                     id="wizard-continue-btn"
                     onClick={handleNextStep}
                     disabled={step === 1 && !selectedCore}
-                    className={`px-6 py-2.5 rounded-xs text-xs uppercase tracking-wider font-semibold shadow-xs transition-all flex items-center gap-1 ${
-                      step === 1 && !selectedCore 
-                        ? 'bg-cream-dark text-charcoal-light/45 cursor-not-allowed' 
+                    className={`px-6 py-2.5 rounded-xs text-xs uppercase tracking-wider font-semibold shadow-xs transition-all flex items-center gap-1 ${step === 1 && !selectedCore
+                        ? 'bg-cream-dark text-charcoal-light/45 cursor-not-allowed'
                         : 'bg-rose hover:bg-blush-dark text-cream cursor-pointer'
-                    }`}
+                      }`}
                   >
                     <span>Continue</span>
                     <ChevronRight className="w-4 h-4" />
@@ -1084,18 +1122,18 @@ export default function BookingView() {
         <div className="mt-16 text-center border-t border-cream-dark/50 pt-12 space-y-4">
           <p className="text-xs sm:text-sm text-charcoal-light font-medium">
             Questions before booking? DM me on{' '}
-            <a 
-              href="https://www.instagram.com/thebrowmanorr/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://www.instagram.com/thebrowmanorr/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="underline text-rose hover:text-rose-dark"
             >
               Instagram
             </a>{' '}
-            <a 
-              href="https://www.instagram.com/thebrowmanorr/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://www.instagram.com/thebrowmanorr/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-bold text-rose hover:text-rose-dark"
             >
               @thebrowmanorr
